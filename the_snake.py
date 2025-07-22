@@ -109,7 +109,7 @@ class Snake(GameObject):
 
     def draw(self) -> None:
         """Отображает змейку на экране."""
-        for position in self.positions[1:]:
+        for _ in self.positions[1:]:
             self.draw_cell()
 
         head_rect = pg.Rect(self.get_head_position(), (GRID_SIZE, GRID_SIZE))
