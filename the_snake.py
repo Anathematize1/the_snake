@@ -69,7 +69,7 @@ class Apple(GameObject):
 class Snake(GameObject):
     """Класс змейки."""
 
-    def __init__(self, body_color, head_color, ) -> None:
+    def __init__(self, body_color, head_color) -> None:
         super().__init__(body_color)
         self.length: int = 1
         self.positions: list[tuple[int, int]] = [self.position]
