@@ -69,7 +69,7 @@ class EdibleObject(GameObject):
 class Snake(GameObject):
     """Класс змейки."""
 
-    def __init__(self, body_color, head_color, ) -> None:
+    def __init__(self, body_color, head_color) -> None:
         super().__init__(body_color)
         self.length: int = 1
         self.positions: list[tuple[int, int]] = [self.position]
@@ -109,7 +109,7 @@ class Snake(GameObject):
 
     def draw(self) -> None:
         """Отображает змейку на экране."""
-        for self.position in self.positions[1:]:
+        for position in self.positions[1:]:
             self.draw_cell()
 
         head_rect = pg.Rect(self.get_head_position(), (GRID_SIZE, GRID_SIZE))
