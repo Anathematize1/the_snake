@@ -204,10 +204,16 @@ class Game:
             screen.fill((BOARD_BACKGROUND_COLOR))
             screen.blit(game_over_text, game_over_rect)
 
-            pg.draw.rect(screen, (BUTTON_BACKGROUND_COLOR),
-                         restart_rect.inflate(BUTTON_INFLATE_SIZE))
-            pg.draw.rect(screen, (BUTTON_BACKGROUND_COLOR),
-                         exit_rect.inflate(BUTTON_INFLATE_SIZE))
+            pg.draw.rect(
+                screen,
+                BUTTON_BACKGROUND_COLOR,
+                restart_rect.inflate(BUTTON_INFLATE_SIZE)
+            )
+            pg.draw.rect(
+                screen,
+                BUTTON_BACKGROUND_COLOR,
+                exit_rect.inflate(BUTTON_INFLATE_SIZE)
+            )
 
             screen.blit(restart_text, restart_rect)
             screen.blit(exit_text, exit_rect)
