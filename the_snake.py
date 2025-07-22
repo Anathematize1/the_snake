@@ -1,10 +1,6 @@
 from random import choice, randint
 
-<<<<<<< HEAD
-import pygame
-=======
 import pygame as pg
->>>>>>> 5902195 (commit after first reviev)
 
 SCREEN_WIDTH, SCREEN_HEIGHT = 640, 480
 GRID_SIZE = 20
