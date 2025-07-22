@@ -21,7 +21,7 @@ BOARD_BACKGROUND_COLOR = (0, 0, 0)
 BORDER_COLOR = (93, 216, 228)
 APPLE_COLOR = (255, 0, 0)
 WRONG_APPLE_COLOR = (120, 120, 0)
-ROCK_COLOR = (128, 128, 128)
+POISONED_APPLE_COLOR = (128, 128, 128)
 SNAKE_BODY_COLOR = (0, 255, 0)
 SNAKE_HEAD_COLOR = (0, 100, 0)
 GAME_OVER_TEXT_COLOR = (255, 0, 0)
@@ -55,21 +55,21 @@ class GameObject:
         pg.draw.rect(screen, BORDER_COLOR, rect, 1)
 
 
-class EdibleObject(GameObject):
-    """Класс игровых объектов, которое змейка съедает."""
+class Apple(GameObject):
+    """Класс яблока, которое змейка съедает."""
 
     def __init__(self, body_color, position) -> None:
         super().__init__(body_color, position)
 
     def draw(self):
-        """отрисовывает 'съедаемые' объекты"""
+        """отрисовывает яблоко"""
         self.draw_cell()
 
 
 class Snake(GameObject):
     """Класс змейки."""
 
-    def __init__(self, body_color, head_color) -> None:
+    def __init__(self, body_color, head_color, ) -> None:
         super().__init__(body_color)
         self.length: int = 1
         self.positions: list[tuple[int, int]] = [self.position]
@@ -123,20 +123,20 @@ class Game:
     def __init__(self) -> None:
         self.snake = Snake(SNAKE_BODY_COLOR, SNAKE_HEAD_COLOR)
         self.occupied_positions = self.snake.positions[:]
-        self.apple = EdibleObject(
+        self.apple = Apple(
             APPLE_COLOR, randomize_position(self.occupied_positions)
         )
-        self.wrong_apple = EdibleObject(
+        self.wrong_apple = Apple(
             WRONG_APPLE_COLOR, randomize_position(self.occupied_positions)
         )
-        self.rock = EdibleObject(
-            ROCK_COLOR, randomize_position(self.occupied_positions)
+        self.poisoned_apple = Apple(
+            POISONED_APPLE_COLOR, randomize_position(self.occupied_positions)
         )
         self.game_speed: int = DEFAULT_GAME_SPEED
         self.items: list[GameObject] = [
             self.apple,
             self.wrong_apple,
-            self.rock
+            self.poisoned_apple
         ]
 
     def check_snake_colission(self) -> None:
@@ -149,12 +149,12 @@ class Game:
         self.occupied_positions = self.snake.positions[:]
         self.apple.position = randomize_position(self.occupied_positions)
         self.wrong_apple.position = randomize_position(self.occupied_positions)
-        self.rock.position = randomize_position(self.occupied_positions)
+        self.poisoned_apple.position = randomize_position(self.occupied_positions)
 
     def object_status(self, item: GameObject) -> None:
         """Проверяет, есть ли пересечение между объектом и змейкой."""
         if self.snake.get_head_position() == item.position:
-            if item.body_color == ROCK_COLOR:
+            if item.body_color == POISONED_APPLE_COLOR:
                 self.game_over()
             elif item.body_color == WRONG_APPLE_COLOR:
                 if self.snake.length == 1:
@@ -272,11 +272,11 @@ def main() -> None:
         game.check_snake_colission()
         game.object_status(game.apple)
         game.object_status(game.wrong_apple)
-        game.object_status(game.rock)
+        game.object_status(game.poisoned_apple)
         screen.fill(BOARD_BACKGROUND_COLOR)
         game.snake.draw()
         game.wrong_apple.draw()
-        game.rock.draw()
+        game.poisoned_apple.draw()
         game.apple.draw()
         pg.display.update()
 
