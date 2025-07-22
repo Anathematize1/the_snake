@@ -149,7 +149,9 @@ class Game:
         self.occupied_positions = self.snake.positions[:]
         self.apple.position = randomize_position(self.occupied_positions)
         self.wrong_apple.position = randomize_position(self.occupied_positions)
-        self.poisoned_apple.position = randomize_position(self.occupied_positions)
+        self.poisoned_apple.position = randomize_position(
+            self.occupied_positions
+        )
 
     def object_status(self, item: GameObject) -> None:
         """Проверяет, есть ли пересечение между объектом и змейкой."""
