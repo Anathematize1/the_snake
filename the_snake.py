@@ -1,6 +1,6 @@
 from random import choice, randint
 
-import pygame as pg
+import pygame
 
 SCREEN_WIDTH, SCREEN_HEIGHT = 640, 480
 GRID_SIZE = 20
@@ -29,8 +29,8 @@ BUTTON_BACKGROUND_COLOR = (200, 200, 200)
 BUTTON_TEXT_COLOR = (0, 0, 0)
 BUTTON_INFLATE_SIZE = (20, 10)
 
-screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-clock = pg.time.Clock()
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+clock = pygame.time.Clock()
 
 
 class GameObject:
@@ -94,13 +94,13 @@ class Snake(GameObject):
     def draw(self) -> None:
         """Отображает змейку на экране."""
         for position in self.positions[1:]:
-            rect = pg.Rect(position, (GRID_SIZE, GRID_SIZE))
-            pg.draw.rect(screen, self.body_color, rect)
-            pg.draw.rect(screen, BORDER_COLOR, rect, 1)
+            rect = pygame.Rect(position, (GRID_SIZE, GRID_SIZE))
+            pygame.draw.rect(screen, self.body_color, rect)
+            pygame.draw.rect(screen, BORDER_COLOR, rect, 1)
 
-        head_rect = pg.Rect(self.get_head_position(), (GRID_SIZE, GRID_SIZE))
-        pg.draw.rect(screen, self.head_color, head_rect)
-        pg.draw.rect(screen, BORDER_COLOR, head_rect, 1)
+        head_rect = pygame.Rect(self.get_head_position(), (GRID_SIZE, GRID_SIZE))
+        pygame.draw.rect(screen, self.head_color, head_rect)
+        pygame.draw.rect(screen, BORDER_COLOR, head_rect, 1)
 
 
 class Apple(GameObject):
@@ -115,9 +115,9 @@ class Apple(GameObject):
 
     def draw(self):
         """отрисовывает яблоко"""
-        rect = pg.Rect(self.position, (GRID_SIZE, GRID_SIZE))
-        pg.draw.rect(screen, self.body_color, rect)
-        pg.draw.rect(screen, BORDER_COLOR, rect, 1)
+        rect = pygame.Rect(self.position, (GRID_SIZE, GRID_SIZE))
+        pygame.draw.rect(screen, self.body_color, rect)
+        pygame.draw.rect(screen, BORDER_COLOR, rect, 1)
 
     def randomize_position(self, occupied_positions) -> tuple[int, int]:
         """
@@ -184,8 +184,8 @@ class Game:
         """Выводит экран с сообщением о конце игры и кнопками Restart, Exit."""
         self.game_speed = DEFAULT_GAME_SPEED
         running = True
-        font = pg.font.SysFont(None, 48)
-        small_font = pg.font.SysFont(None, 36)
+        font = pygame.font.SysFont(None, 48)
+        small_font = pygame.font.SysFont(None, 36)
 
         game_over_text = font.render('Game Over', True, GAME_OVER_TEXT_COLOR)
         game_over_rect = game_over_text.get_rect(
@@ -201,32 +201,32 @@ class Game:
         )
 
         while running:
-            for event in pg.event.get():
-                if event.type == pg.QUIT:
-                    pg.quit()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
                     exit()
 
-                elif (event.type == pg.MOUSEBUTTONDOWN
+                elif (event.type == pygame.MOUSEBUTTONDOWN
                       and event.button == 1):
                     if restart_rect.collidepoint(event.pos):
                         self.snake.reset()
                         return
                     elif exit_rect.collidepoint(event.pos):
-                        pg.quit()
+                        pygame.quit()
                         exit()
 
             screen.fill((BOARD_BACKGROUND_COLOR))
             screen.blit(game_over_text, game_over_rect)
 
-            pg.draw.rect(screen, (BUTTON_BACKGROUND_COLOR),
+            pygame.draw.rect(screen, (BUTTON_BACKGROUND_COLOR),
                          restart_rect.inflate(BUTTON_INFLATE_SIZE))
-            pg.draw.rect(screen, (BUTTON_BACKGROUND_COLOR),
+            pygame.draw.rect(screen, (BUTTON_BACKGROUND_COLOR),
                          exit_rect.inflate(BUTTON_INFLATE_SIZE))
 
             screen.blit(restart_text, restart_rect)
             screen.blit(exit_text, exit_rect)
 
-            pg.display.update()
+            pygame.display.update()
 
     def increase_speed(self) -> None:
         """
@@ -239,30 +239,30 @@ class Game:
 
 def handle_keys(game_object: Snake) -> None:
     """Обрабатывает нажатия клавиш и меняет направление змейки."""
-    for event in pg.event.get():
-        if event.type == pg.QUIT:
-            pg.quit()
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
             raise SystemExit
-        elif event.type == pg.KEYDOWN:
-            if event.key == pg.K_UP and game_object.direction != DOWN:
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP and game_object.direction != DOWN:
                 game_object.next_direction = UP
-            elif event.key == pg.K_DOWN and game_object.direction != UP:
+            elif event.key == pygame.K_DOWN and game_object.direction != UP:
                 game_object.next_direction = DOWN
-            elif event.key == pg.K_LEFT and game_object.direction != RIGHT:
+            elif event.key == pygame.K_LEFT and game_object.direction != RIGHT:
                 game_object.next_direction = LEFT
-            elif event.key == pg.K_RIGHT and game_object.direction != LEFT:
+            elif event.key == pygame.K_RIGHT and game_object.direction != LEFT:
                 game_object.next_direction = RIGHT
 
 
 def main() -> None:
     """Основной цикл игры."""
-    pg.init()
-    pg.font.init()
+    pygame.init()
+    pygame.font.init()
     game = Game()
     while True:
         clock.tick(game.game_speed)
         handle_keys(game.snake)
-        pg.display.set_caption(
+        pygame.display.set_caption(
             f'Snake | Length: {game.snake.length}'
             f'| Speed: {game.game_speed - 3}'
         )
@@ -277,11 +277,8 @@ def main() -> None:
         game.wrong_apple.draw()
         game.poisoned_apple.draw()
         game.apple.draw()
-        pg.display.update()
+        pygame.display.update()
 
-
-if __name__ == '__main__':
-    main()
 
 if __name__ == '__main__':
     main()
