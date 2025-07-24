@@ -36,8 +36,8 @@ clock = pg.time.Clock()
 class GameObject:
     """Базовый класс для игровых объектов."""
 
-    def __init__(self, body_color, position=None) -> None:
-        self.position: tuple[int, int] = position or GRID_CENTER
+    def __init__(self, body_color=APPLE_COLOR) -> None:
+        self.position: tuple[int, int] = GRID_CENTER
         self.body_color: tuple[int, int, int] = body_color
 
     def draw(self) -> None:
@@ -48,29 +48,13 @@ class GameObject:
             'в дочернем классе для отрисовки объекта.'
         )
 
-    def draw_cell(self) -> None:
-        """Отрисовывает одну ячейку игрового поля"""
-        rect = pg.Rect(self.position, (GRID_SIZE, GRID_SIZE))
-        pg.draw.rect(screen, self.body_color, rect)
-        pg.draw.rect(screen, BORDER_COLOR, rect, 1)
-
-
-class Apple(GameObject):
-    """Класс яблока, которое змейка съедает."""
-
-    def __init__(self, body_color, position) -> None:
-        super().__init__(body_color, position)
-
-    def draw(self):
-        """отрисовывает яблоко"""
-        self.draw_cell()
-
 
 class Snake(GameObject):
     """Класс змейки."""
 
-    def __init__(self, body_color, head_color) -> None:
-        super().__init__(body_color)
+    def __init__(self, body_color=SNAKE_BODY_COLOR,
+                 head_color=SNAKE_HEAD_COLOR) -> None:
+        super().__init__(body_color=body_color)
         self.length: int = 1
         self.positions: list[tuple[int, int]] = [self.position]
         self.direction: tuple[int, int] = RIGHT
@@ -109,12 +93,49 @@ class Snake(GameObject):
 
     def draw(self) -> None:
         """Отображает змейку на экране."""
-        for _ in self.positions[1:]:
-            self.draw_cell()
+        for position in self.positions[1:]:
+            rect = pg.Rect(position, (GRID_SIZE, GRID_SIZE))
+            pg.draw.rect(screen, self.body_color, rect)
+            pg.draw.rect(screen, BORDER_COLOR, rect, 1)
 
         head_rect = pg.Rect(self.get_head_position(), (GRID_SIZE, GRID_SIZE))
         pg.draw.rect(screen, self.head_color, head_rect)
         pg.draw.rect(screen, BORDER_COLOR, head_rect, 1)
+
+
+class Apple(GameObject):
+    """Класс яблока, которое змейка съедает."""
+
+    def __init__(self, body_color=APPLE_COLOR,
+                 occupied_positions=GRID_CENTER) -> None:
+        if occupied_positions is None:
+            occupied_positions = [GRID_CENTER]
+        super().__init__(body_color=body_color)
+        self.randomize_position(occupied_positions)
+
+    def draw(self):
+        """отрисовывает яблоко"""
+        rect = pg.Rect(self.position, (GRID_SIZE, GRID_SIZE))
+        pg.draw.rect(screen, self.body_color, rect)
+        pg.draw.rect(screen, BORDER_COLOR, rect, 1)
+
+    def randomize_position(self, occupied_positions) -> tuple[int, int]:
+        """
+        Генерирует случайную позицию для объекта,
+        избегая уже занятых координат.
+        """
+        if occupied_positions == GRID_CENTER:
+            self.position = GRID_CENTER
+            return self.position
+        else:
+            while True:
+                self.position = (
+                    randint(0, GRID_WIDTH - 1) * GRID_SIZE,
+                    randint(0, GRID_HEIGHT - 1) * GRID_SIZE
+                )
+                if self.position not in occupied_positions:
+                    occupied_positions.append(self.position)
+                    return self.position
 
 
 class Game:
@@ -122,16 +143,11 @@ class Game:
 
     def __init__(self) -> None:
         self.snake = Snake(SNAKE_BODY_COLOR, SNAKE_HEAD_COLOR)
-        self.occupied_positions = self.snake.positions[:]
-        self.apple = Apple(
-            APPLE_COLOR, randomize_position(self.occupied_positions)
-        )
-        self.wrong_apple = Apple(
-            WRONG_APPLE_COLOR, randomize_position(self.occupied_positions)
-        )
-        self.poisoned_apple = Apple(
-            POISONED_APPLE_COLOR, randomize_position(self.occupied_positions)
-        )
+        self.occupied_positions = self.snake.positions
+        self.apple = Apple(APPLE_COLOR, self.occupied_positions)
+        self.wrong_apple = Apple(WRONG_APPLE_COLOR, self.occupied_positions)
+        self.poisoned_apple = Apple(POISONED_APPLE_COLOR,
+                                    self.occupied_positions)
         self.game_speed: int = DEFAULT_GAME_SPEED
         self.items: list[GameObject] = [
             self.apple,
@@ -146,12 +162,8 @@ class Game:
 
     def randomize_all_items(self) -> None:
         """Размещает, одновременно, все игровые объекты случайным образом"""
-        self.occupied_positions = self.snake.positions[:]
-        self.apple.position = randomize_position(self.occupied_positions)
-        self.wrong_apple.position = randomize_position(self.occupied_positions)
-        self.poisoned_apple.position = randomize_position(
-            self.occupied_positions
-        )
+        for item in self.items:
+            item.randomize_position(self.occupied_positions)
 
     def object_status(self, item: GameObject) -> None:
         """Проверяет, есть ли пересечение между объектом и змейкой."""
@@ -206,16 +218,10 @@ class Game:
             screen.fill((BOARD_BACKGROUND_COLOR))
             screen.blit(game_over_text, game_over_rect)
 
-            pg.draw.rect(
-                screen,
-                BUTTON_BACKGROUND_COLOR,
-                restart_rect.inflate(BUTTON_INFLATE_SIZE)
-            )
-            pg.draw.rect(
-                screen,
-                BUTTON_BACKGROUND_COLOR,
-                exit_rect.inflate(BUTTON_INFLATE_SIZE)
-            )
+            pg.draw.rect(screen, (BUTTON_BACKGROUND_COLOR),
+                         restart_rect.inflate(BUTTON_INFLATE_SIZE))
+            pg.draw.rect(screen, (BUTTON_BACKGROUND_COLOR),
+                         exit_rect.inflate(BUTTON_INFLATE_SIZE))
 
             screen.blit(restart_text, restart_rect)
             screen.blit(exit_text, exit_rect)
@@ -248,21 +254,6 @@ def handle_keys(game_object: Snake) -> None:
                 game_object.next_direction = RIGHT
 
 
-def randomize_position(occupied_positions) -> tuple[int, int]:
-    """
-    Генерирует случайную позицию для объекта,
-    избегая уже занятых координат.
-    """
-    while True:
-        position = (
-            randint(0, GRID_WIDTH - 1) * GRID_SIZE,
-            randint(0, GRID_HEIGHT - 1) * GRID_SIZE
-        )
-        if position not in occupied_positions:
-            occupied_positions.append(position)
-            return position
-
-
 def main() -> None:
     """Основной цикл игры."""
     pg.init()
@@ -288,6 +279,9 @@ def main() -> None:
         game.apple.draw()
         pg.display.update()
 
+
+if __name__ == '__main__':
+    main()
 
 if __name__ == '__main__':
     main()
