@@ -98,7 +98,8 @@ class Snake(GameObject):
             pygame.draw.rect(screen, self.body_color, rect)
             pygame.draw.rect(screen, BORDER_COLOR, rect, 1)
 
-        head_rect = pygame.Rect(self.get_head_position(), (GRID_SIZE, GRID_SIZE))
+        head_rect = pygame.Rect(self.get_head_position(), (GRID_SIZE,
+                                                           GRID_SIZE))
         pygame.draw.rect(screen, self.head_color, head_rect)
         pygame.draw.rect(screen, BORDER_COLOR, head_rect, 1)
 
@@ -219,9 +220,9 @@ class Game:
             screen.blit(game_over_text, game_over_rect)
 
             pygame.draw.rect(screen, (BUTTON_BACKGROUND_COLOR),
-                         restart_rect.inflate(BUTTON_INFLATE_SIZE))
+                             restart_rect.inflate(BUTTON_INFLATE_SIZE))
             pygame.draw.rect(screen, (BUTTON_BACKGROUND_COLOR),
-                         exit_rect.inflate(BUTTON_INFLATE_SIZE))
+                             exit_rect.inflate(BUTTON_INFLATE_SIZE))
 
             screen.blit(restart_text, restart_rect)
             screen.blit(exit_text, exit_rect)
@@ -278,6 +279,10 @@ def main() -> None:
         game.poisoned_apple.draw()
         game.apple.draw()
         pygame.display.update()
+
+
+if __name__ == '__main__':
+    main()
 
 
 if __name__ == '__main__':
