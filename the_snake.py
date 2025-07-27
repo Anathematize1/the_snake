@@ -103,8 +103,10 @@ class Snake(GameObject):
 class Apple(GameObject):
     """Класс яблока, которое змейка съедает."""
 
-    def __init__(self, body_color=APPLE_COLOR) -> None:
+    def __init__(self, body_color=APPLE_COLOR,
+                 occupied_positions=GRID_CENTER) -> None:
         super().__init__(body_color=body_color)
+        self.randomize_position(occupied_positions)
 
     def draw(self):
         """отрисовывает яблоко"""
@@ -135,7 +137,6 @@ class Game:
         self.wrong_apple = Apple(WRONG_APPLE_COLOR)
         self.poisoned_apple = Apple(POISONED_APPLE_COLOR)
         self.game_speed: int = DEFAULT_GAME_SPEED
-        self.randomize_all_items()
 
     def check_snake_colission(self) -> None:
         """Проверяет столкновение змейки с её телом."""
