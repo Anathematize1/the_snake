@@ -8,7 +8,7 @@ GRID_WIDTH = SCREEN_WIDTH // GRID_SIZE
 GRID_HEIGHT = SCREEN_HEIGHT // GRID_SIZE
 GRID_CENTER = (
     SCREEN_WIDTH // 2,
-    SCREEN_HEIGHT // 2
+    SCREEN_HEIGHT // 2,
 )
 
 UP = (0, -1)
@@ -93,26 +93,18 @@ class Snake(GameObject):
 
     def draw(self) -> None:
         """Отображает змейку на экране."""
-        for position in self.positions[1:]:
+        for cell_number, position in enumerate(self.positions):
             rect = pygame.Rect(position, (GRID_SIZE, GRID_SIZE))
-            pygame.draw.rect(screen, self.body_color, rect)
+            color = self.head_color if cell_number == 0 else self.body_color
+            pygame.draw.rect(screen, color, rect)
             pygame.draw.rect(screen, BORDER_COLOR, rect, 1)
-
-        head_rect = pygame.Rect(self.get_head_position(), (GRID_SIZE,
-                                                           GRID_SIZE))
-        pygame.draw.rect(screen, self.head_color, head_rect)
-        pygame.draw.rect(screen, BORDER_COLOR, head_rect, 1)
 
 
 class Apple(GameObject):
     """Класс яблока, которое змейка съедает."""
 
-    def __init__(self, body_color=APPLE_COLOR,
-                 occupied_positions=GRID_CENTER) -> None:
-        if occupied_positions is None:
-            occupied_positions = [GRID_CENTER]
+    def __init__(self, body_color=APPLE_COLOR) -> None:
         super().__init__(body_color=body_color)
-        self.randomize_position(occupied_positions)
 
     def draw(self):
         """отрисовывает яблоко"""
@@ -120,23 +112,18 @@ class Apple(GameObject):
         pygame.draw.rect(screen, self.body_color, rect)
         pygame.draw.rect(screen, BORDER_COLOR, rect, 1)
 
-    def randomize_position(self, occupied_positions) -> tuple[int, int]:
+    def randomize_position(self, occupied_positions) -> None:
         """
         Генерирует случайную позицию для объекта,
         избегая уже занятых координат.
         """
-        if occupied_positions == GRID_CENTER:
-            self.position = GRID_CENTER
-            return self.position
-        else:
-            while True:
-                self.position = (
-                    randint(0, GRID_WIDTH - 1) * GRID_SIZE,
-                    randint(0, GRID_HEIGHT - 1) * GRID_SIZE
-                )
-                if self.position not in occupied_positions:
-                    occupied_positions.append(self.position)
-                    return self.position
+        while True:
+            self.position = (
+                randint(0, GRID_WIDTH - 1) * GRID_SIZE,
+                randint(0, GRID_HEIGHT - 1) * GRID_SIZE
+            )
+            if self.position not in occupied_positions:
+                break
 
 
 class Game:
@@ -144,17 +131,11 @@ class Game:
 
     def __init__(self) -> None:
         self.snake = Snake(SNAKE_BODY_COLOR, SNAKE_HEAD_COLOR)
-        self.occupied_positions = self.snake.positions
-        self.apple = Apple(APPLE_COLOR, self.occupied_positions)
-        self.wrong_apple = Apple(WRONG_APPLE_COLOR, self.occupied_positions)
-        self.poisoned_apple = Apple(POISONED_APPLE_COLOR,
-                                    self.occupied_positions)
+        self.apple = Apple(APPLE_COLOR)
+        self.wrong_apple = Apple(WRONG_APPLE_COLOR)
+        self.poisoned_apple = Apple(POISONED_APPLE_COLOR)
         self.game_speed: int = DEFAULT_GAME_SPEED
-        self.items: list[GameObject] = [
-            self.apple,
-            self.wrong_apple,
-            self.poisoned_apple
-        ]
+        self.randomize_all_items()
 
     def check_snake_colission(self) -> None:
         """Проверяет столкновение змейки с её телом."""
@@ -163,20 +144,24 @@ class Game:
 
     def randomize_all_items(self) -> None:
         """Размещает, одновременно, все игровые объекты случайным образом"""
-        for item in self.items:
-            item.randomize_position(self.occupied_positions)
+        occupied_positions = self.snake.positions[:]
+        self.apple.randomize_position(occupied_positions)
+        occupied_positions.append(self.apple.position)
+        self.wrong_apple.randomize_position(occupied_positions)
+        occupied_positions.append(self.wrong_apple.position)
+        self.poisoned_apple.randomize_position(occupied_positions)
 
     def object_status(self, item: GameObject) -> None:
         """Проверяет, есть ли пересечение между объектом и змейкой."""
         if self.snake.get_head_position() == item.position:
-            if item.body_color == POISONED_APPLE_COLOR:
+            if item.position == self.poisoned_apple.position:
                 self.game_over()
-            elif item.body_color == WRONG_APPLE_COLOR:
+            elif item.position == self.wrong_apple.position:
                 if self.snake.length == 1:
                     self.game_over()
                     return
                 self.snake.length -= 1
-            elif item.body_color == APPLE_COLOR:
+            elif item.position == self.apple.position:
                 self.snake.length += 1
                 self.increase_speed()
             self.randomize_all_items()
@@ -184,7 +169,6 @@ class Game:
     def game_over(self) -> None:
         """Выводит экран с сообщением о конце игры и кнопками Restart, Exit."""
         self.game_speed = DEFAULT_GAME_SPEED
-        running = True
         font = pygame.font.SysFont(None, 48)
         small_font = pygame.font.SysFont(None, 36)
 
@@ -201,7 +185,7 @@ class Game:
             center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 60)
         )
 
-        while running:
+        while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -279,10 +263,6 @@ def main() -> None:
         game.poisoned_apple.draw()
         game.apple.draw()
         pygame.display.update()
-
-
-if __name__ == '__main__':
-    main()
 
 
 if __name__ == '__main__':
